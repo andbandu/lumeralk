@@ -7,10 +7,11 @@ import Link from "next/link";
 import { useProducts, Product } from "@/context/ProductContext";
 
 export default function AdminProducts() {
-    const { products, categories, addProduct, updateProduct, deleteProduct } = useProducts();
+    const { products, categories, addProduct, updateProduct, deleteProduct, uploadImage } = useProducts();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
+    const [isUploading, setIsUploading] = useState(false);
 
     const [formData, setFormData] = useState<Partial<Product>>({
         name: "",
@@ -19,7 +20,8 @@ export default function AdminProducts() {
         category: "Clothing",
         price: "LKR 0",
         stock: 0,
-        image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1964&auto=format&fit=crop",
+        image: "",
+        gallery: ["", "", ""], // 3 additional images
         description: ""
     });
 
@@ -46,6 +48,27 @@ export default function AdminProducts() {
             });
         }
         setIsModalOpen(true);
+    };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const publicUrl = await uploadImage(file, 'products');
+            if (index === 0) {
+                setFormData(prev => ({ ...prev, image: publicUrl }));
+            } else {
+                const newGallery = [...(formData.gallery || ["", "", ""])];
+                newGallery[index - 1] = publicUrl;
+                setFormData(prev => ({ ...prev, gallery: newGallery }));
+            }
+        } catch (err) {
+            console.error("Upload failed");
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     const handleCloseModal = () => {
@@ -250,6 +273,51 @@ export default function AdminProducts() {
                                         className="w-full p-4 bg-slate-50 border border-slate-200 focus:outline-none focus:border-primary text-sm font-bold text-primary" 
                                     />
                                 </div>
+                                <div className="col-span-1 md:col-span-2 space-y-4">
+                                    <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Atmospheric Imagery (4 Master Assets)</label>
+                                    <div className="grid grid-cols-4 gap-4">
+                                        {/* Main Featured Image Slot */}
+                                        <div className="col-span-4 md:col-span-1 space-y-4">
+                                            <div className="relative aspect-[3/4] bg-slate-50 border border-dashed border-slate-300 group overflow-hidden">
+                                                {formData.image ? (
+                                                    <Image src={formData.image} alt="Main" fill className="object-cover" />
+                                                ) : (
+                                                    <div className="absolute inset-0 flex items-center justify-center text-slate-300">
+                                                        <Plus size={24} />
+                                                    </div>
+                                                )}
+                                                <input 
+                                                    type="file" 
+                                                    onChange={(e) => handleImageUpload(e, 0)}
+                                                    className="absolute inset-0 opacity-0 cursor-pointer z-10" 
+                                                />
+                                                <div className="absolute inset-x-0 bottom-0 bg-primary/80 text-white text-[7px] uppercase font-bold py-2 text-center transform translate-y-full group-hover:translate-y-0 transition-transform">
+                                                    Primary Image
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Gallery Slots */}
+                                        {[1, 2, 3].map((idx) => (
+                                            <div key={idx} className="relative aspect-[3/4] bg-slate-50 border border-dashed border-slate-300 group overflow-hidden">
+                                                {formData.gallery?.[idx - 1] ? (
+                                                    <Image src={formData.gallery[idx - 1]} alt={`Gallery ${idx}`} fill className="object-cover" />
+                                                ) : (
+                                                    <div className="absolute inset-0 flex items-center justify-center text-slate-300 text-xs">
+                                                        <Plus size={16} />
+                                                    </div>
+                                                )}
+                                                <input 
+                                                    type="file" 
+                                                    onChange={(e) => handleImageUpload(e, idx)}
+                                                    className="absolute inset-0 opacity-0 cursor-pointer z-10" 
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <p className="text-[9px] text-slate-400 uppercase tracking-widest italic">Slot 1 is the primary storefront thumbnail. Re-uploading replaces the signature asset.</p>
+                                </div>
+
                                 <div className="space-y-2">
                                     <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Badge Tag</label>
                                     <input 
@@ -292,10 +360,17 @@ export default function AdminProducts() {
                                 </button>
                                 <button 
                                     type="submit"
-                                    className="px-10 py-4 bg-primary text-white text-[11px] uppercase tracking-widest font-black shadow-lg hover:bg-slate-800 transition-all cursor-pointer flex items-center space-x-2"
+                                    disabled={isUploading}
+                                    className={`px-10 py-4 ${isUploading ? 'bg-slate-400' : 'bg-primary'} text-white text-[11px] uppercase tracking-widest font-black shadow-lg hover:bg-slate-800 transition-all cursor-pointer flex items-center space-x-2`}
                                 >
-                                    <Save size={14} />
-                                    <span>{editingProduct ? "Synchronize Changes" : "Commit Product"}</span>
+                                    {isUploading ? (
+                                        <span>Uploading...</span>
+                                    ) : (
+                                        <>
+                                            <Save size={14} />
+                                            <span>{editingProduct ? "Synchronize Changes" : "Commit Product"}</span>
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </form>

@@ -6,14 +6,15 @@ import { useProducts, Category } from "@/context/ProductContext";
 import Image from "next/image";
 
 export default function AdminCategories() {
-    const { categories, addCategory, deleteCategory } = useProducts();
+    const { categories, addCategory, deleteCategory, uploadImage } = useProducts();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [isUploading, setIsUploading] = useState(false);
 
     const [formData, setFormData] = useState<Category>({
         name: "",
         slug: "",
-        image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1964&auto=format&fit=crop",
+        image: "",
         description: ""
     });
 
@@ -21,11 +22,26 @@ export default function AdminCategories() {
         cat.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const publicUrl = await uploadImage(file, 'categories');
+            setFormData(prev => ({ ...prev, image: publicUrl }));
+        } catch (err) {
+            console.error("Upload failed");
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const slug = formData.name.toLowerCase().replace(/\s+/g, '-');
         await addCategory({ ...formData, slug });
-        setFormData({ name: "", slug: "", image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1964&auto=format&fit=crop", description: "" });
+        setFormData({ name: "", slug: "", image: "", description: "" });
         setIsModalOpen(false);
     };
 
@@ -110,15 +126,28 @@ export default function AdminCategories() {
                                         className="w-full p-4 bg-slate-50 border border-slate-200 focus:outline-none focus:border-primary text-sm font-bold text-primary" 
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Visual Asset (URL)</label>
-                                    <input 
-                                        type="text" 
-                                        required
-                                        value={formData.image}
-                                        onChange={(e) => setFormData({...formData, image: e.target.value})}
-                                        className="w-full p-4 bg-slate-50 border border-slate-200 focus:outline-none focus:border-primary text-xs font-bold text-primary" 
-                                    />
+                                <div className="space-y-4">
+                                    <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Department Visual</label>
+                                    <div className="flex flex-col space-y-4">
+                                        {formData.image && (
+                                            <div className="relative h-32 w-40 border border-slate-200 overflow-hidden">
+                                                <Image src={formData.image} alt="Preview" fill className="object-cover" />
+                                            </div>
+                                        )}
+                                        <div className="relative group overflow-hidden">
+                                            <input 
+                                                type="file" 
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                                className="absolute inset-0 opacity-0 cursor-pointer z-10" 
+                                            />
+                                            <div className="w-full p-4 bg-slate-50 border border-dashed border-slate-300 group-hover:border-primary transition-colors text-center">
+                                                <span className="text-[10px] uppercase tracking-widest font-black text-slate-400 group-hover:text-primary">
+                                                    {isUploading ? "Uploading to Cloud..." : "Select Master Asset"}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

@@ -48,10 +48,8 @@ export default function ProductDetail() {
 
   const gallery = [
     product.image,
-    "https://images.unsplash.com/photo-1618932260643-eee4a2f652a6?q=80&w=1964&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?q=80&w=2070&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1584273143981-41c073dfe8f8?q=80&w=1974&auto=format&fit=crop"
-  ];
+    ...(product.gallery || [])
+  ].filter(img => img !== "");
   const sizes = ["XS", "S", "M", "L", "XL"];
   const [selectedSize, setSelectedSize] = useState("M");
   const [qty, setQty] = useState(1);

@@ -11,7 +11,8 @@ export interface Product {
     category: string;
     price: string;
     stock: number;
-    image: string;
+    image: string; // Primary image
+    gallery?: string[]; // Additional 3 images
     description?: string;
     is_new?: boolean;
     rating?: number;
@@ -40,6 +41,9 @@ interface ProductContextType {
     // Category Management
     addCategory: (category: Omit<Category, "id">) => Promise<void>;
     deleteCategory: (slug: string) => Promise<void>;
+
+    // Storage Management
+    uploadImage: (file: File, bucket: 'products' | 'categories') => Promise<string>;
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
@@ -77,6 +81,29 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const showToast = (message: string, type: 'success' | 'error' = 'success') => {
         setToast({ message, type });
         setTimeout(() => setToast(null), 3500);
+    };
+
+    const uploadImage = async (file: File, bucket: 'products' | 'categories'): Promise<string> => {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        try {
+            const { error: uploadError } = await supabase.storage
+                .from(bucket)
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage
+                .from(bucket)
+                .getPublicUrl(filePath);
+
+            return data.publicUrl;
+        } catch (error: any) {
+            showToast(`Asset upload failed: ${error.message}`, 'error');
+            throw error;
+        }
     };
 
     const addProduct = async (product: Omit<Product, "id">) => {
@@ -149,7 +176,8 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
             deleteProduct, 
             getProductBySlug,
             addCategory,
-            deleteCategory
+            deleteCategory,
+            uploadImage
         }}>
             {children}
 
