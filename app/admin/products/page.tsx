@@ -128,7 +128,11 @@ export default function AdminProducts() {
                                             </div>
                                             <div>
                                                 <h3 className="text-sm font-bold text-primary mb-1">{product.name}</h3>
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">{product.category}</span>
+                                                <div className="flex items-center space-x-2">
+                                                    <span className="text-[10px] font-bold text-slate-400 continental uppercase tracking-wide">{product.category}</span>
+                                                    {product.is_new && <span className="bg-primary text-white text-[7px] px-2 py-0.5 font-bold uppercase tracking-wider">New</span>}
+                                                    {product.tag && <span className="bg-accent text-white text-[7px] px-2 py-0.5 font-bold uppercase tracking-wider">{product.tag}</span>}
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
@@ -247,14 +251,24 @@ export default function AdminProducts() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Visual Asset (URL)</label>
+                                    <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Badge Tag</label>
                                     <input 
                                         type="text" 
-                                        required
-                                        value={formData.image}
-                                        onChange={(e) => setFormData({...formData, image: e.target.value})}
+                                        value={formData.tag || ""}
+                                        onChange={(e) => setFormData({...formData, tag: e.target.value})}
+                                        placeholder="e.g. Best Seller"
                                         className="w-full p-4 bg-slate-50 border border-slate-200 focus:outline-none focus:border-primary text-xs font-bold text-primary" 
                                     />
+                                </div>
+                                <div className="flex items-center space-x-4 p-4 bg-slate-50 border border-slate-200">
+                                    <input 
+                                        type="checkbox" 
+                                        id="is_new"
+                                        checked={formData.is_new || false}
+                                        onChange={(e) => setFormData({...formData, is_new: e.target.checked})}
+                                        className="w-5 h-5 accent-primary cursor-pointer" 
+                                    />
+                                    <label htmlFor="is_new" className="text-[10px] uppercase font-black tracking-widest text-primary cursor-pointer select-none">Mark as New Collection</label>
                                 </div>
                             </div>
                             

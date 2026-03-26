@@ -115,7 +115,7 @@ function ProductListingContent() {
                                         </Link>
 
                                         {/* Status Meta Tag */}
-                                        {product.isNew && (
+                                        {product.is_new && (
                                             <div className="absolute top-4 right-4 z-10 pointer-events-none">
                                                 <span className="bg-white/90 backdrop-blur-xl text-primary text-[7px] uppercase tracking-[0.4em] font-black px-4 py-2 border border-black/5 shadow-xl">
                                                     Best Seller
