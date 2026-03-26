@@ -11,10 +11,11 @@ export default function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const [showAnnouncement, setShowAnnouncement] = useState(true);
 
     useEffect(() => {
         const handleScroll = () => {
-            setIsScrolled(window.scrollY > 20);
+            setIsScrolled(window.scrollY > 50);
         };
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
@@ -28,99 +29,120 @@ export default function Navbar() {
     ];
 
     return (
-        <nav
-            className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled
-                ? "bg-white py-4 md:py-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border-b border-black/5"
-                : "bg-transparent py-10 md:py-14"
-                }`}
-        >
-            {/* Scrolled Underline Accent */}
-            <div className={`hidden md:block absolute bottom-0 left-1/2 -translate-x-1/2 h-px bg-primary/10 transition-all duration-700 ${isScrolled ? "w-4/5" : "w-0"}`} />
-
-            <div className="container mx-auto px-6 flex items-center justify-between">
-                {/* Mobile Menu Toggle */}
-                <button
-                    className={`lg:hidden p-2 transition-colors duration-500 ${isScrolled ? "text-primary" : "text-white"}`}
-                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        <header className="fixed top-0 w-full z-50 transition-all duration-700 pointer-events-none">
+            <nav
+                className={`container mx-auto px-6 transition-all duration-1000 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] pointer-events-auto mt-6 md:mt-10 ${isScrolled
+                    ? "max-w-5xl translate-y-[-1.5rem]"
+                    : "max-w-full translate-y-0"
+                    }`}
+            >
+                <div
+                    className={`relative w-full flex items-center justify-between px-8 md:px-16 py-4 transition-all duration-1000 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] ${isScrolled
+                        ? "bg-white/95 backdrop-blur-3xl rounded-full shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] border border-black/5 min-h-[64px]"
+                        : "bg-transparent py-6"
+                        }`}
                 >
-                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
+                    <div className="flex-1 flex items-center h-full">
+                        <div className="flex items-center h-full gap-6 md:gap-8">
+                            {/* Scrolled Logo Text - Animated width and opacity */}
+                            <div className={`transition-all duration-1000 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] flex items-center overflow-hidden border-primary/10 ${isScrolled ? "max-w-[200px] opacity-100 pr-5 border-r mr-2" : "max-w-0 opacity-0 pr-0 border-r-0 mr-0"}`}>
+                                <Link href="/" className="flex items-center hover:scale-[1.03] transition-transform whitespace-nowrap">
+                                    <span className="premium-serif text-xl tracking-[0.3em] text-primary font-bold">
+                                        LUMERA
+                                    </span>
+                                </Link>
+                            </div>
+                            
+                            {/* Desktop Nav Links */}
+                            <div className="hidden lg:flex items-center space-x-10 transition-all duration-1000 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)]">
+                                {navLinks.map((link) => (
+                                    <Link
+                                        key={link.name}
+                                        href={link.href}
+                                        className={`text-[9px] uppercase tracking-[0.5em] font-black leading-none transition-all duration-700 hover:text-accent transform hover:translate-y-[-1px] ${isScrolled ? "text-primary/60" : "text-white/60"
+                                            }`}
+                                    >
+                                        {link.name}
+                                    </Link>
+                                ))}
+                            </div>
 
-                {/* Desktop Navigation */}
-                <div className="hidden lg:flex items-center space-x-14">
-                    {navLinks.map((link) => (
-                        <Link
-                            key={link.name}
-                            href={link.href}
-                            className={`text-[9px] uppercase tracking-[0.5em] font-black transition-all duration-500 ${isScrolled ? "text-primary hover:text-accent" : "text-white/60 hover:text-white"
-                                }`}
-                        >
-                            {link.name}
-                        </Link>
-                    ))}
-                </div>
-
-                {/* Logo Container */}
-                <div className={`absolute left-1/2 -translate-x-1/2 transition-all duration-700 flex justify-center items-center ${
-                    isScrolled 
-                        ? "top-1/2 md:top-0 -translate-y-1/2 md:translate-y-0 bg-transparent md:bg-white md:rounded-b-full md:shadow-[0_15px_30px_-10px_rgba(0,0,0,0.1)] md:border-b md:border-x md:border-black/5 px-0 md:px-8 pt-0 md:pt-2 pb-0 md:pb-5" 
-                        : "top-1/2 -translate-y-1/2 bg-transparent"
-                }`}>
-                    <Link href="/" className="group transition-transform duration-700 hover:scale-105">
-                        <img
-                            src="/lumera.png"
-                            alt="LUMERA"
-                            className={`w-auto object-contain transition-all duration-700 ${
-                                isScrolled ? "h-16 md:h-28" : "h-20 md:h-40"
-                            }`}
-                        />
-                    </Link>
-                </div>
-
-                {/* Icons */}
-                <div className={`flex items-center space-x-6 md:space-x-8 transition-colors duration-500 ${isScrolled ? "text-primary" : "text-white"}`}>
-                    <button className="hover:text-accent transition-colors">
-                        <Search size={18} strokeWidth={2.5} />
-                    </button>
-                    <button className="hover:text-accent transition-colors hidden sm:block">
-                        <User size={18} strokeWidth={2.5} />
-                    </button>
-                    <button
-                        onClick={() => setIsCartOpen(true)}
-                        className="hover:text-accent transition-colors relative"
-                    >
-                        <ShoppingBag size={18} strokeWidth={2.5} />
-                        {cartCount > 0 && (
-                            <span className={`absolute -top-1.5 -right-1.5 bg-brand-gradient text-[7px] text-white w-3.5 h-3.5 rounded-full flex items-center justify-center font-black shadow-lg transition-transform duration-500 ${isScrolled ? "scale-90" : "scale-100"}`}>
-                                {cartCount}
-                            </span>
-                        )}
-                    </button>
-                </div>
-            </div>
-
-            <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-
-            {/* Mobile Menu Overlay */}
-            {isMobileMenuOpen && (
-                <div className="lg:hidden absolute top-full left-0 w-full bg-white border-t border-secondary py-6 px-6 animate-fade-in">
-                    <div className="flex flex-col space-y-4">
-                        {navLinks.map((link) => (
-                            <Link
-                                key={link.name}
-                                href={link.href}
-                                className="text-lg font-medium tracking-wide border-b border-secondary pb-2"
-                                onClick={() => setIsMobileMenuOpen(false)}
+                            {/* Mobile Menu Toggle Indicator */}
+                            <button
+                                className={`lg:hidden flex items-center justify-center p-2 -ml-2 transition-all duration-1000 ${isScrolled ? "text-primary" : "text-white"}`}
+                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             >
-                                {link.name}
-                            </Link>
-                        ))}
-                        <Link href="/account" className="text-lg font-medium tracking-wide">
-                            My Account
+                                {isMobileMenuOpen ? <X size={24} strokeWidth={1.5} /> : <Menu size={24} strokeWidth={1.5} />}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Center: Image Mark (Cross-fades out on scroll) */}
+                    <div className={`flex shrink-0 items-center justify-center absolute left-1/2 -translate-x-1/2 transition-all duration-1000 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] ${isScrolled ? "opacity-0 scale-90 blur-sm pointer-events-none" : "opacity-100 scale-100 blur-0"}`}>
+                        <Link href="/" className="flex items-center justify-center hover:scale-[1.02] transition-transform">
+                            <img
+                                src="/lumera.png"
+                                alt="LUMERA"
+                                className="h-24 md:h-48 w-auto object-contain"
+                            />
                         </Link>
                     </div>
+
+                    {/* Right: Actions */}
+                    <div className="flex-none flex items-center justify-end h-full">
+                        <div className={`flex items-center space-x-3 md:space-x-5 transition-colors duration-1000 ${isScrolled ? "text-primary" : "text-white"}`}>
+                            <button className="hover:text-accent transition-all duration-300 hover:scale-110 p-2">
+                                <Search size={22} strokeWidth={2} />
+                            </button>
+                            <button
+                                onClick={() => setIsCartOpen(true)}
+                                className="relative group p-2 transition-all duration-300 hover:scale-110"
+                            >
+                                <ShoppingBag size={22} strokeWidth={2} className="group-hover:text-accent transition-colors" />
+                                {cartCount > 0 && (
+                                    <span className="absolute top-0 right-0 bg-brand-gradient text-[7px] text-white w-4.5 h-4.5 rounded-full flex items-center justify-center font-black shadow-lg">
+                                        {cartCount}
+                                    </span>
+                                )}
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            )}
-        </nav>
+
+                {/* Mobile Menu Overlay */}
+                {isMobileMenuOpen && (
+                    <div className="lg:hidden fixed inset-0 z-[60] bg-primary flex flex-col p-10 animate-fade-in">
+                        <div className="flex justify-between items-center mb-20">
+                            <img src="/lumera.png" alt="LUMERA" className="h-10 w-auto" />
+                            <button onClick={() => setIsMobileMenuOpen(false)} className="text-white p-2">
+                                <X size={32} strokeWidth={1} />
+                            </button>
+                        </div>
+                        <div className="flex flex-col space-y-12">
+                            {navLinks.map((link, idx) => (
+                                <Link
+                                    key={link.name}
+                                    href={link.href}
+                                    className="text-5xl font-light tracking-tighter text-white premium-serif border-b border-white/5 pb-8 animate-slide-up"
+                                    style={{ animationDelay: `${idx * 0.1}s` }}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    {link.name}
+                                </Link>
+                            ))}
+                        </div>
+                        <div className="mt-auto pt-10 border-t border-white/5 flex justify-between items-center">
+                            <Link href="/account" className="text-[10px] uppercase tracking-[0.5em] font-black text-white/40">My Account</Link>
+                            <div className="flex space-x-6 text-white/40">
+                                <Search size={20} />
+                                <ShoppingBag size={20} />
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </nav>
+
+            <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+        </header>
     );
 }

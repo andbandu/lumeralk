@@ -27,19 +27,24 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
             style={{ position: 'fixed', top: 0, bottom: 0, left: 0, right: 0 }}
         >
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative h-full w-full max-w-md bg-white shadow-2xl flex flex-col animate-fade-in shadow-[-10px_0_30px_rgba(0,0,0,0.1)]">
+            <div className="relative h-full w-full max-w-md bg-white shadow-2xl flex flex-col animate-fade-in shadow-[-20px_0_60px_rgba(0,0,0,0.1)]">
                 {/* Header */}
-                <div className="p-5 md:p-8 border-b border-[rgba(15,23,42,0.1)] flex justify-between items-center text-primary shrink-0">
-                    <div className="flex items-center space-x-3">
-                        <ShoppingBag size={20} />
-                        <h2 className="text-xl font-bold tracking-tight premium-serif">Your Bag</h2>
+                <div className="p-8 md:p-10 border-b border-primary/5 flex justify-between items-end text-primary shrink-0 bg-slate-50">
+                    <div className="space-y-4">
+                        <div className="flex items-center space-x-3 text-accent animate-fade-in">
+                            <ShoppingBag size={20} />
+                            <span className="text-[10px] uppercase tracking-[0.5em] font-black">Shopping Bag</span>
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-light tracking-tight premium-serif">Your Bag.</h2>
                         {cartCount > 0 && (
-                            <span className="text-[10px] bg-primary text-white px-3 py-1 font-bold">
-                                {cartCount} Item{cartCount !== 1 ? 's' : ''}
-                            </span>
+                            <div className="inline-block bg-primary px-4 py-1.5 shadow-xl">
+                                <span className="text-[10px] text-white uppercase tracking-[0.3em] font-black">
+                                    {cartCount} Item{cartCount !== 1 ? 's' : ''}
+                                </span>
+                            </div>
                         )}
                     </div>
-                    <button onClick={onClose} className="hover:rotate-90 hover:text-accent transition-all duration-300">
+                    <button onClick={onClose} className="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center hover:rotate-90 hover:text-accent transition-all duration-500 border border-primary/5">
                         <X size={24} />
                     </button>
                 </div>
@@ -106,26 +111,27 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
 
                 {/* Footer */}
                 {items.length > 0 && (
-                    <div className="p-5 md:p-8 border-t border-[rgba(15,23,42,0.1)] space-y-5 bg-[rgba(15,23,42,0.05)] text-primary shrink-0 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
-                        <div className="space-y-4">
-                            <div className="flex justify-between text-[11px] uppercase tracking-widest font-bold">
-                                <span className="text-muted">Subtotal</span>
-                                <span>{formatCurrency(calculateSubtotal())}</span>
+                    <div className="p-8 md:p-10 border-t border-primary/5 space-y-8 bg-slate-50 text-primary shrink-0 pb-[calc(2rem+env(safe-area-inset-bottom))]">
+                        <div className="space-y-5">
+                            <div className="flex justify-between text-[11px] uppercase tracking-[0.4em] font-black text-primary/30">
+                                <span>Subtotal</span>
+                                <span className="text-primary">{formatCurrency(calculateSubtotal())}</span>
                             </div>
-                            <div className="flex justify-between text-[11px] uppercase tracking-widest font-bold">
-                                <span className="text-muted">Shipping</span>
-                                <span className="text-accent text-[9px]">Calculated at checkout</span>
+                            <div className="flex justify-between text-[11px] uppercase tracking-[0.4em] font-black text-primary/30">
+                                <span>Est. Shipping</span>
+                                <span className="text-accent text-[9px]">Calculated Next Step</span>
                             </div>
-                            <div className="pt-4 border-t border-[rgba(15,23,42,0.1)] flex justify-between text-xl font-light tracking-tight premium-serif">
-                                <span>Total</span>
-                                <span className="text-primary border-b border-accent pb-1">{formatCurrency(calculateSubtotal())}</span>
+                            <div className="pt-6 border-t border-primary/10 flex justify-between text-3xl font-light tracking-tight premium-serif items-end">
+                                <span className="text-primary/40 text-sm uppercase tracking-[0.2em] font-black mb-1">Total Due</span>
+                                <span className="text-primary border-b-2 border-accent pb-1">{formatCurrency(calculateSubtotal())}</span>
                             </div>
                         </div>
-                        <button className="w-full bg-primary text-white py-5 flex items-center justify-center space-x-4 text-[10px] uppercase tracking-[0.4em] font-black hover:bg-brand-gradient hover:-translate-y-1 transition-all duration-300 shadow-xl group">
-                            <span>Secure Checkout</span>
-                            <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
+                        <button className="w-full bg-primary text-white py-6 flex items-center justify-center space-x-6 text-[10px] uppercase tracking-[0.5em] font-black hover:bg-brand-gradient hover:-translate-y-1 transition-all duration-500 shadow-2xl group relative overflow-hidden">
+                            <span className="relative z-10 transition-transform duration-500 group-hover:translate-x-2">Secure Checkout</span>
+                            <ArrowRight size={20} className="relative z-10 group-hover:translate-x-4 transition-transform duration-500" />
+                            <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                         </button>
-                        <p className="text-[9px] text-center text-muted uppercase tracking-[0.2em] font-bold italic">
+                        <p className="text-[9px] text-center text-primary/30 uppercase tracking-[0.3em] font-black italic">
                             Free shipping on all premium collections.
                         </p>
                     </div>

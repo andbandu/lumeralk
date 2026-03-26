@@ -45,18 +45,20 @@ export default function ProductDetail() {
     <div className="bg-white min-h-screen text-primary overflow-x-hidden selection:bg-accent selection:text-white">
       <Navbar />
       
-      {/* Spacer to push content down beautifully below the transparent/fixed Navbar initially */}
-      <div className="h-28 md:h-36 bg-primary w-full shadow-2xl"></div>
+      {/* Spacer to push content down properly below the fixed Navbar */}
+      <div className="h-32 md:h-56 bg-primary w-full shadow-2xl"></div>
 
       <main>
         {/* Breadcrumb Context */}
-        <div className="container mx-auto px-6 py-6 border-b border-primary/5">
-          <div className="flex items-center space-x-2 text-[9px] md:text-xs uppercase tracking-[0.2em] md:tracking-widest font-bold text-muted">
-            <Link href="/" className="hover:text-primary transition-colors">Home</Link>
-            <span>/</span>
-            <Link href="/shop" className="hover:text-primary transition-colors">Curated Edits</Link>
-            <span>/</span>
-            <span className="text-primary truncate max-w-[150px] md:max-w-none">{product.name}</span>
+        <div className="bg-slate-50 border-b border-primary/5 py-8">
+          <div className="container mx-auto px-6">
+            <div className="flex items-center space-x-3 text-[10px] uppercase tracking-[0.4em] font-black text-white/30">
+              <Link href="/" className="text-primary hover:text-accent transition-colors">Home</Link>
+              <span className="text-primary/10">/</span>
+              <Link href="/shop" className="text-primary hover:text-accent transition-colors">Curated Edits</Link>
+              <span className="text-primary/10">/</span>
+              <span className="text-primary/40 truncate max-w-[150px] md:max-w-none">{product.name}</span>
+            </div>
           </div>
         </div>
 
@@ -129,16 +131,16 @@ export default function ProductDetail() {
               </div>
 
               {/* Product Information & Interactivity */}
-              <div className="flex flex-col py-0 md:py-10">
-                <div className="mb-8">
-                  <div className="flex items-center space-x-1 text-accent mb-6">
-                    {[...Array(product.rating)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
-                    <span className="text-[10px] uppercase tracking-[0.2em] font-black text-muted ml-3">(42 Reviews)</span>
+              <div className="flex flex-col py-0 md:py-6">
+                <div className="mb-12">
+                  <div className="flex items-center space-x-2 text-accent mb-8">
+                    {[...Array(product.rating)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
+                    <span className="text-[10px] uppercase tracking-[0.4em] font-black text-primary/30 ml-4">(42 Reviews)</span>
                   </div>
-                  <h1 className="premium-serif text-5xl md:text-7xl leading-[1.1] text-primary mb-6 tracking-tight">
+                  <h1 className="premium-serif text-4xl md:text-6xl leading-[1.1] text-primary mb-8 tracking-tighter">
                     {product.name}
                   </h1>
-                  <p className="text-2xl md:text-3xl tracking-[0.2em] font-medium text-primary/80">
+                  <p className="text-3xl md:text-4xl tracking-[0.4em] font-black text-primary/20 uppercase">
                     {product.price}
                   </p>
                 </div>
@@ -177,12 +179,12 @@ export default function ProductDetail() {
                 </div>
 
                 {/* eCommerce Action Stack */}
-                <div className="flex flex-col sm:flex-row gap-4 mb-16">
+                <div className="flex flex-col sm:flex-row gap-6 mb-20">
                   {/* Quantity Incrementer */}
-                  <div className="flex border border-primary/20 bg-white shadow-sm">
-                    <button onClick={() => setQty(Math.max(1, qty - 1))} className="px-6 py-4 text-primary hover:bg-secondary/30 transition-colors font-medium">-</button>
-                    <div className="w-12 flex items-center justify-center font-bold text-sm">{qty}</div>
-                    <button onClick={() => setQty(qty + 1)} className="px-6 py-4 text-primary hover:bg-secondary/30 transition-colors font-medium">+</button>
+                  <div className="flex border border-primary/10 bg-white shadow-sm overflow-hidden">
+                    <button onClick={() => setQty(Math.max(1, qty - 1))} className="px-8 py-5 text-primary hover:bg-slate-50 transition-colors font-black text-lg">-</button>
+                    <div className="w-16 flex items-center justify-center font-black text-base border-x border-primary/5">{qty}</div>
+                    <button onClick={() => setQty(qty + 1)} className="px-8 py-5 text-primary hover:bg-slate-50 transition-colors font-black text-lg">+</button>
                   </div>
                   
                   {/* Primary Add to Bag Workflow */}
@@ -196,17 +198,16 @@ export default function ProductDetail() {
                         size: selectedSize,
                         quantity: qty
                       });
-                      // Optional: give user visual feedback or open the cart
                     }}
-                    className="flex-1 bg-primary text-white py-5 md:py-0 text-[10px] uppercase tracking-[0.4em] font-black hover:bg-brand-gradient hover:text-white transition-all duration-500 shadow-xl flex items-center justify-center group/addbtn relative overflow-hidden"
+                    className="flex-1 bg-brand-gradient text-white py-6 md:py-0 text-[10px] uppercase tracking-[0.5em] font-black hover:scale-105 transition-all duration-500 shadow-[0_20px_60px_-15px_rgba(226,74,150,0.5)] flex items-center justify-center group/addbtn relative overflow-hidden"
                   >
                     <span className="relative z-10 transition-transform duration-500 group-hover/addbtn:-translate-x-3">Add To Bag</span>
-                    <ShoppingBag size={18} className="absolute right-1/2 translate-x-12 opacity-0 group-hover/addbtn:translate-x-24 group-hover/addbtn:opacity-100 transition-all duration-500 z-10" />
+                    <ShoppingBag size={20} className="absolute right-1/2 translate-x-14 opacity-0 group-hover/addbtn:translate-x-28 group-hover/addbtn:opacity-100 transition-all duration-500 z-10" />
                   </button>
                   
                   {/* Favorite / Wishlist */}
-                  <button className="w-full sm:w-auto h-16 sm:px-6 shadow-sm border border-primary/20 flex items-center justify-center text-primary group hover:bg-accent hover:border-accent hover:text-white transition-all duration-500">
-                    <Heart size={20} className="group-hover:scale-125 transition-transform duration-500" />
+                  <button className="w-full sm:w-auto h-[72px] sm:px-8 shadow-sm border border-primary/10 flex items-center justify-center text-primary group hover:bg-accent hover:border-accent hover:text-white transition-all duration-500">
+                    <Heart size={24} className="group-hover:scale-125 transition-transform duration-500" />
                   </button>
                 </div>
                 
