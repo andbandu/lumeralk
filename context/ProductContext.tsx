@@ -57,6 +57,7 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Initial Fetch from Supabase
     useEffect(() => {
         const fetchData = async () => {
+            if (!supabase) return;
             setLoading(true);
             try {
                 const { data: pData, error: pError } = await supabase.from('products').select('*').order('created_at', { ascending: false });
