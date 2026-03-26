@@ -7,14 +7,14 @@ import { Trash2, ShoppingBag, ArrowRight, Shield, Truck, CreditCard } from "@/co
 import { useState } from "react";
 
 export default function CheckoutPage() {
-    const { cart, removeFromCart, updateQuantity, getCartTotal } = useCart();
+    const { items, removeFromCart, updateQuantity, getCartTotal } = useCart();
     const [step, setStep] = useState(1); // 1: Cart, 2: Info, 3: Payment
 
     const total = getCartTotal();
     const shipping = 500; // Flat LKR 500
-    const grandTotal = total + (cart.length > 0 ? shipping : 0);
+    const grandTotal = total + (items.length > 0 ? shipping : 0);
 
-    if (cart.length === 0 && step === 1) {
+    if (items.length === 0 && step === 1) {
         return (
             <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center space-y-8 animate-fade-in">
                 <div className="w-24 h-24 bg-secondary/10 rounded-full flex items-center justify-center text-primary/20">
@@ -62,8 +62,8 @@ export default function CheckoutPage() {
                             {step === 1 && (
                                 <div className="space-y-10 animate-fade-in">
                                     <div className="space-y-8">
-                                        {cart.map((item) => (
-                                            <div key={`${item.productId}-${item.size}`} className="flex flex-col sm:flex-row space-y-6 sm:space-y-0 sm:space-x-8 group">
+                                        {items.map((item) => (
+                                            <div key={item.id} className="flex flex-col sm:flex-row space-y-6 sm:space-y-0 sm:space-x-8 group">
                                                 <div className="relative w-32 aspect-[3/4] bg-secondary/10 overflow-hidden border border-primary/5">
                                                     <Image src={item.image} alt={item.name} fill className="object-cover" />
                                                 </div>
@@ -72,7 +72,7 @@ export default function CheckoutPage() {
                                                         <div className="flex justify-between items-start">
                                                             <h3 className="premium-serif text-2xl text-primary tracking-tight">{item.name}</h3>
                                                             <button 
-                                                                onClick={() => removeFromCart(item.productId, item.size)}
+                                                                onClick={() => removeFromCart(item.id)}
                                                                 className="text-primary/20 hover:text-red-500 transition-colors cursor-pointer"
                                                             >
                                                                 <Trash2 size={16} />
@@ -83,9 +83,9 @@ export default function CheckoutPage() {
                                                     
                                                     <div className="flex justify-between items-center mt-6">
                                                         <div className="flex items-center border border-primary/5 p-1 bg-slate-50/50">
-                                                            <button onClick={() => updateQuantity(item.productId, item.size, item.quantity - 1)} className="w-8 h-8 flex items-center justify-center text-primary/20 hover:text-primary transition-colors">-</button>
+                                                            <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-8 h-8 flex items-center justify-center text-primary/20 hover:text-primary transition-colors">-</button>
                                                             <span className="w-10 text-center text-[11px] font-black text-primary/60">{item.quantity}</span>
-                                                            <button onClick={() => updateQuantity(item.productId, item.size, item.quantity + 1)} className="w-8 h-8 flex items-center justify-center text-primary/20 hover:text-primary transition-colors">+</button>
+                                                            <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="w-8 h-8 flex items-center justify-center text-primary/20 hover:text-primary transition-colors">+</button>
                                                         </div>
                                                         <span className="text-sm font-black text-primary tracking-wide">
                                                             LKR {(parseInt(item.price.replace(/[^\d]/g, "")) * item.quantity).toLocaleString()}

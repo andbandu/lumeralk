@@ -16,6 +16,8 @@ type CartContextType = {
   items: CartItem[];
   addToCart: (item: Omit<CartItem, "id">) => void;
   removeFromCart: (id: string) => void;
+  updateQuantity: (id: string, quantity: number) => void;
+  getCartTotal: () => number;
   cartCount: number;
 };
 
@@ -74,10 +76,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const updateQuantity = (id: string, quantity: number) => {
+    if (quantity < 1) return;
+    setItems((prev) => prev.map((item) => 
+      item.id === id ? { ...item, quantity } : item
+    ));
+  };
+
+  const getCartTotal = () => {
+    return items.reduce((total, item) => {
+      const priceVal = parseInt(item.price.replace(/[^\d]/g, ""));
+      return total + (priceVal * item.quantity);
+    }, 0);
+  };
+
   const cartCount = items.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ items, addToCart, removeFromCart, cartCount }}>
+    <CartContext.Provider value={{ items, addToCart, removeFromCart, updateQuantity, getCartTotal, cartCount }}>
       {children}
       
       {/* Global Toast Notification System */}

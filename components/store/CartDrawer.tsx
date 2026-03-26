@@ -7,7 +7,7 @@ import { useCart } from "@/context/CartContext";
 import { useEffect } from "react";
 
 export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
-    const { items, cartCount, removeFromCart, addToCart } = useCart();
+    const { items, cartCount, removeFromCart, updateQuantity, getCartTotal } = useCart();
 
     // Body scroll lock
     useEffect(() => {
@@ -22,14 +22,6 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
     }, [isOpen]);
 
     if (!isOpen) return null;
-
-    // Helper to calculate numeric LKR value securely
-    const calculateSubtotal = () => {
-        return items.reduce((total, item) => {
-            const numericPrice = parseInt(item.price.replace(/\D/g, '')) || 0;
-            return total + (numericPrice * item.quantity);
-        }, 0);
-    };
 
     const formatCurrency = (amount: number) => {
         return `LKR ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -89,24 +81,14 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
                                     <div className="flex justify-between items-end">
                                         <div className="flex items-center space-x-4 border border-primary/5 p-1 px-2 rounded-sm bg-slate-50/50">
                                             <button 
-                                                onClick={() => {
-                                                    if (item.quantity > 1) {
-                                                        removeFromCart(item.id);
-                                                        addToCart({ ...item, quantity: item.quantity - 1, size: item.size });
-                                                    } else {
-                                                        removeFromCart(item.id);
-                                                    }
-                                                }} 
+                                                onClick={() => updateQuantity(item.id, item.quantity - 1)} 
                                                 className="p-1 text-primary/40 hover:text-primary transition-colors cursor-pointer"
                                             >
                                                 <Minus size={12} />
                                             </button>
                                             <span className="w-4 text-center text-xs font-bold text-primary/60">{item.quantity}</span>
                                             <button 
-                                                onClick={() => {
-                                                    removeFromCart(item.id);
-                                                    addToCart({ ...item, quantity: item.quantity + 1, size: item.size });
-                                                }}
+                                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
                                                 className="p-1 text-primary/40 hover:text-primary transition-colors cursor-pointer"
                                             >
                                                 <Plus size={12} />
@@ -126,18 +108,22 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
                         <div className="space-y-4">
                             <div className="flex justify-between text-[10px] uppercase tracking-[0.4em] font-black text-primary/30">
                                 <span>Subtotal</span>
-                                <span className="text-primary/60">{formatCurrency(calculateSubtotal())}</span>
+                                <span className="text-primary/60">{formatCurrency(getCartTotal())}</span>
                             </div>
                             <div className="pt-6 border-t border-primary/5 flex justify-between items-end">
                                 <span className="text-primary/20 text-[10px] uppercase tracking-[0.4em] font-black mb-1">Total Due</span>
-                                <span className="premium-serif text-3xl text-primary">{formatCurrency(calculateSubtotal())}</span>
+                                <span className="premium-serif text-3xl text-primary">{formatCurrency(getCartTotal())}</span>
                             </div>
                         </div>
 
-                        <button className="group relative w-full h-16 lg:h-20 bg-primary text-white text-[11px] uppercase tracking-[0.6em] font-black transition-all duration-700 hover:bg-brand-gradient flex items-center justify-center overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] cursor-pointer">
+                        <Link 
+                            href="/checkout" 
+                            onClick={onClose}
+                            className="group relative w-full h-16 lg:h-20 bg-primary text-white text-[11px] uppercase tracking-[0.6em] font-black transition-all duration-700 hover:bg-brand-gradient flex items-center justify-center overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] cursor-pointer"
+                        >
                             <span className="relative z-10">Secure Checkout</span>
                             <div className="absolute inset-0 bg-brand-gradient translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-out" />
-                        </button>
+                        </Link>
                         
                         <p className="text-[10px] text-center text-primary/20 uppercase tracking-[0.3em] font-black italic">
                             Dedicated to the island spirit.
