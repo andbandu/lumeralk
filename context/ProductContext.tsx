@@ -1,92 +1,115 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 export interface Product {
     id: string;
     name: string;
-    code: string; // Ref Code
+    code: string; 
     slug: string;
     category: string;
     price: string;
     stock: number;
     image: string;
     description?: string;
-    isNew?: boolean;
+    is_new?: boolean;
     rating?: number;
     tag?: string;
+    created_at?: string;
 }
 
 export interface Category {
+    id?: string;
     name: string;
     slug: string;
     image: string;
     description: string;
+    created_at?: string;
 }
 
 interface ProductContextType {
     products: Product[];
     categories: Category[];
-    addProduct: (product: Product) => void;
-    updateProduct: (product: Product) => void;
-    deleteProduct: (id: string) => void;
+    loading: boolean;
+    addProduct: (product: Omit<Product, "id">) => Promise<void>;
+    updateProduct: (product: Product) => Promise<void>;
+    deleteProduct: (id: string) => Promise<void>;
     getProductBySlug: (slug: string) => Product | undefined;
     
     // Category Management
-    addCategory: (category: Category) => void;
-    deleteCategory: (slug: string) => void;
+    addCategory: (category: Omit<Category, "id">) => Promise<void>;
+    deleteCategory: (slug: string) => Promise<void>;
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-const INITIAL_PRODUCTS: Product[] = [
-    { id: "1", name: "Ivory Handloom Saree", code: "LMR-SR01", slug: "ivory-handloom-saree", category: "Handloom", price: "LKR 45,000", stock: 12, image: "/product1.webp", description: "A timeless handloom saree in pure ivory silk, featuring traditional Sri Lankan weave patterns and a gold-dipped border.", isNew: true, rating: 5, tag: "Best Seller" },
-    { id: "2", name: "Crimson Silk Kaftan", code: "LMR-KF02", slug: "crimson-silk-kaftan", category: "Resort", price: "LKR 28,500", stock: 8, image: "/product2.webp", description: "Fluid crimson silk kaftan with hand-rolled hems and architectural side slits. Perfect for high-end resort evenings.", isNew: false, rating: 5, tag: "Exclusive" },
-    { id: "3", name: "Onyx Evening Gown", code: "LMR-GN03", slug: "onyx-evening-gown", category: "Evening", price: "LKR 120,000", stock: 3, image: "/product3.webp", description: "Sculptural onyx evening gown in Italian crepe, featuring a dramatic back-split and hand-applied crystal accents.", isNew: true, rating: 5, tag: "Trending" },
-    { id: "4", name: "Linen Studio Shirt", code: "LMR-SH04", slug: "linen-studio-shirt", category: "Studio", price: "LKR 18,000", stock: 25, image: "/product4.webp", description: "Minimalist studio shirt in organic off-white linen. Features a refined mandarin collar and mother-of-pearl buttons.", isNew: false, rating: 4, tag: "Essential" },
-];
-
-const INITIAL_CATEGORIES: Category[] = [
-    { name: "Handloom", slug: "handloom", image: "/product1.webp", description: "Traditional Sri Lankan artisanal weaves." },
-    { name: "Resort", slug: "resort", image: "/product2.webp", description: "Fluid silhouettes for tropical escapes." },
-    { name: "Evening", slug: "evening", image: "/product3.webp", description: "Ethereal silk and twilight elegance." },
-    { name: "Studio", slug: "studio", image: "/product4.webp", description: "Minimalist essentials for modern living." },
-    { name: "Handbags", slug: "handbags", image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=1935&auto=format&fit=crop", description: "Artisanal woven mastery." },
-    { name: "Accessories", slug: "accessories", image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1999&auto=format&fit=crop", description: "Refined accents of luxury." },
-];
-
 export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
-    const [categories, setCategories] = useState<Category[]>(INITIAL_CATEGORIES);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
+    // Initial Fetch from Supabase
     useEffect(() => {
-        const savedProducts = localStorage.getItem("lumera_products");
-        const savedCategories = localStorage.getItem("lumera_categories");
-        
-        if (savedProducts) setProducts(JSON.parse(savedProducts));
-        if (savedCategories) setCategories(JSON.parse(savedCategories));
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const { data: pData, error: pError } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+                const { data: cData, error: cError } = await supabase.from('categories').select('*').order('created_at', { ascending: false });
+
+                if (pError) throw pError;
+                if (cError) throw cError;
+
+                setProducts(pData || []);
+                setCategories(cData || []);
+            } catch (err: any) {
+                console.error("Fetch error:", err.message);
+                showToast("Failed to connect to the inventory matrix.", 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, []);
 
-    const saveAndSetProducts = (newProducts: Product[]) => {
-        setProducts(newProducts);
-        localStorage.setItem("lumera_products", JSON.stringify(newProducts));
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3500);
     };
 
-    const saveAndSetCategories = (newCategories: Category[]) => {
-        setCategories(newCategories);
-        localStorage.setItem("lumera_categories", JSON.stringify(newCategories));
+    const addProduct = async (product: Omit<Product, "id">) => {
+        try {
+            const { data, error } = await supabase.from('products').insert([product]).select();
+            if (error) throw error;
+            setProducts([data[0], ...products]);
+            showToast(`Article "${product.name}" successfully committed to database.`);
+        } catch (err: any) {
+            showToast(`Operation failed: ${err.message}`, 'error');
+        }
     };
 
-    const addProduct = (product: Product) => {
-        saveAndSetProducts([...products, product]);
+    const updateProduct = async (updatedProduct: Product) => {
+        try {
+            const { error } = await supabase.from('products').update(updatedProduct).eq('id', updatedProduct.id);
+            if (error) throw error;
+            setProducts(products.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+            showToast(`Database synchronized for "${updatedProduct.name}".`);
+        } catch (err: any) {
+            showToast(`Synchronization failed: ${err.message}`, 'error');
+        }
     };
 
-    const updateProduct = (updatedProduct: Product) => {
-        saveAndSetProducts(products.map(p => p.id === updatedProduct.id ? updatedProduct : p));
-    };
-
-    const deleteProduct = (id: string) => {
-        saveAndSetProducts(products.filter(p => p.id !== id));
+    const deleteProduct = async (id: string) => {
+        try {
+            const { error } = await supabase.from('products').delete().eq('id', id);
+            if (error) throw error;
+            setProducts(products.filter(p => p.id !== id));
+            showToast(`Article purged from database.`, 'success');
+        } catch (err: any) {
+            showToast(`Deletional failure: ${err.message}`, 'error');
+        }
     };
 
     const getProductBySlug = (slug: string) => {
@@ -94,20 +117,33 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
 
     // Category Logic
-    const addCategory = (category: Category) => {
-        if (!categories.find(c => c.slug === category.slug)) {
-            saveAndSetCategories([...categories, category]);
+    const addCategory = async (category: Omit<Category, "id">) => {
+        try {
+            const { data, error } = await supabase.from('categories').insert([category]).select();
+            if (error) throw error;
+            setCategories([data[0], ...categories]);
+            showToast(`Strategic department "${category.name}" created.`);
+        } catch (err: any) {
+            showToast(`Category creation failed: ${err.message}`, 'error');
         }
     };
 
-    const deleteCategory = (slug: string) => {
-        saveAndSetCategories(categories.filter(c => c.slug !== slug));
+    const deleteCategory = async (slug: string) => {
+        try {
+            const { error } = await supabase.from('categories').delete().eq('slug', slug);
+            if (error) throw error;
+            setCategories(categories.filter(c => c.slug !== slug));
+            showToast(`Department offline.`);
+        } catch (err: any) {
+            showToast(`Removal failed: ${err.message}`, 'error');
+        }
     };
 
     return (
         <ProductContext.Provider value={{ 
             products, 
             categories, 
+            loading,
             addProduct, 
             updateProduct, 
             deleteProduct, 
@@ -116,6 +152,31 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
             deleteCategory
         }}>
             {children}
+
+            {/* Admin Success/Error Toast UI */}
+            {toast && (
+                <div className="fixed top-24 right-8 z-[200] animate-slide-up">
+                    <div className={`px-8 py-5 flex items-center space-x-6 shadow-2xl border ${
+                        toast.type === 'success' 
+                        ? 'bg-primary text-white border-white/10' 
+                        : 'bg-red-950 text-white border-red-500/30'
+                    }`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                             toast.type === 'success' ? 'bg-brand-gradient' : 'bg-red-500'
+                        }`}>
+                            {toast.type === 'success' ? (
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            ) : (
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            )}
+                        </div>
+                        <div>
+                            <p className="text-[10px] uppercase tracking-[0.4em] font-black opacity-40 mb-1">{toast.type.toUpperCase()}</p>
+                            <p className="text-sm font-bold tracking-wide">{toast.message}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </ProductContext.Provider>
     );
 };

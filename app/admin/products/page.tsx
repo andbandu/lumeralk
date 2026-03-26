@@ -53,18 +53,23 @@ export default function AdminProducts() {
         setEditingProduct(null);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const productData = {
-            ...formData,
-            id: editingProduct ? editingProduct.id : Date.now().toString(),
-            slug: formData.name?.toLowerCase().replace(/\s+/g, '-') || ""
-        } as Product;
-
+        const slug = formData.name?.toLowerCase().replace(/\s+/g, '-') || "";
+        
         if (editingProduct) {
-            updateProduct(productData);
+            await updateProduct({
+                ...formData,
+                id: editingProduct.id,
+                slug
+            } as Product);
         } else {
-            addProduct(productData);
+            // New products let Supabase generate the ID
+            const { id: _, ...newProductData } = formData as any;
+            await addProduct({
+                ...newProductData,
+                slug
+            });
         }
         handleCloseModal();
     };

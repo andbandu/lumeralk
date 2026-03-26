@@ -21,10 +21,10 @@ export default function AdminCategories() {
         cat.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const slug = formData.name.toLowerCase().replace(/\s+/g, '-');
-        addCategory({ ...formData, slug });
+        await addCategory({ ...formData, slug });
         setFormData({ name: "", slug: "", image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1964&auto=format&fit=crop", description: "" });
         setIsModalOpen(false);
     };
