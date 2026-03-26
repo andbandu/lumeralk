@@ -1,76 +1,288 @@
-import { Plus, Search, Filter, MoreVertical, Edit, Trash2 } from "@/components/Icons";
+"use client";
+
+import { useState } from "react";
+import { Plus, Search, Filter, Edit, Trash2, ExternalLink, X, Save } from "@/components/Icons";
 import Image from "next/image";
+import Link from "next/link";
+import { useProducts, Product } from "@/context/ProductContext";
 
 export default function AdminProducts() {
-    const products = [
-        { id: 1, name: "Silk Evening Gown", category: "Clothing", price: "$240.00", stock: 12, image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1964&auto=format&fit=crop" },
-        { id: 2, name: "Leather Tote Bag", category: "Accessories", price: "$180.00", stock: 25, image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=1935&auto=format&fit=crop" },
-        { id: 3, name: "Cashmere Sweater", category: "Clothing", price: "$120.00", stock: 8, image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=1964&auto=format&fit=crop" },
-        { id: 4, name: "Gold Hoop Earrings", category: "Accessories", price: "$45.00", stock: 45, image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=1974&auto=format&fit=crop" },
-    ];
+    const { products, categories, addProduct, updateProduct, deleteProduct } = useProducts();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [searchQuery, setSearchQuery] = useState("");
+
+    const [formData, setFormData] = useState<Partial<Product>>({
+        name: "",
+        code: "",
+        slug: "",
+        category: "Clothing",
+        price: "LKR 0",
+        stock: 0,
+        image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1964&auto=format&fit=crop",
+        description: ""
+    });
+
+    const filteredProducts = products.filter(p => 
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        p.code.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const handleOpenModal = (product?: Product) => {
+        if (product) {
+            setEditingProduct(product);
+            setFormData(product);
+        } else {
+            setEditingProduct(null);
+            setFormData({
+                name: "",
+                code: `LMR-${Math.random().toString(36).substr(2, 4).toUpperCase()}`,
+                slug: "",
+                category: categories[0]?.name || "General",
+                price: "LKR 0",
+                stock: 0,
+                image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1964&auto=format&fit=crop",
+                description: ""
+            });
+        }
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setEditingProduct(null);
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const productData = {
+            ...formData,
+            id: editingProduct ? editingProduct.id : Date.now().toString(),
+            slug: formData.name?.toLowerCase().replace(/\s+/g, '-') || ""
+        } as Product;
+
+        if (editingProduct) {
+            updateProduct(productData);
+        } else {
+            addProduct(productData);
+        }
+        handleCloseModal();
+    };
 
     return (
-        <div className="space-y-8">
-            {/* Search and Filter Bar */}
-            <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-                <div className="relative w-full md:w-96">
-                    <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+        <div className="space-y-10 font-sans">
+            {/* Professional Command Toolbar */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-6 md:space-y-0 relative z-10">
+                <div className="relative w-full md:w-96 group">
+                    <Search size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
                     <input
                         type="text"
-                        placeholder="Search products..."
-                        className="w-full pl-10 pr-4 py-3 bg-white rounded-xl border border-muted/10 focus:outline-none focus:border-accent shadow-premium text-sm"
+                        placeholder="Search inventory..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-12 pr-6 py-4 bg-white border border-slate-200 focus:outline-none focus:border-primary/30 text-xs font-bold uppercase tracking-wider transition-all"
                     />
                 </div>
-                <div className="flex items-center space-x-4 w-full md:w-auto">
-                    <button className="flex items-center space-x-2 bg-white px-5 py-3 rounded-xl border border-muted/10 hover-glow text-sm font-bold uppercase tracking-widest transition-all">
-                        <Filter size={16} />
-                        <span>Filter</span>
+                
+                <div className="flex items-center space-x-3 w-full md:w-auto">
+                    <button className="flex-1 md:flex-none flex items-center justify-center space-x-2 bg-white px-6 py-4 border border-slate-200 hover:bg-slate-50 transition-all text-[11px] uppercase tracking-wider font-bold cursor-pointer">
+                        <Filter size={14} strokeWidth={2} />
+                        <span>Filter Matrix</span>
                     </button>
-                    <button className="flex-1 md:flex-none flex items-center justify-center space-x-2 bg-primary text-white px-6 py-3 rounded-xl hover:bg-accent transition-all shadow-premium text-sm font-bold uppercase tracking-widest group">
-                        <Plus size={18} className="group-hover:rotate-90 transition-transform" />
+                    
+                    <button 
+                        onClick={() => handleOpenModal()}
+                        className="flex-1 md:flex-none group h-14 px-8 bg-primary text-white text-[11px] uppercase tracking-widest font-black transition-all hover:bg-slate-800 flex items-center justify-center shadow-md cursor-pointer"
+                    >
+                        <Plus size={16} className="mr-2" />
                         <span>Add Product</span>
                     </button>
                 </div>
             </div>
 
-            {/* Products Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {products.map((product) => (
-                    <div key={product.id} className="bg-white rounded-2xl shadow-premium border border-muted/10 overflow-hidden group">
-                        <div className="relative h-64 overflow-hidden">
-                            <Image
-                                src={product.image}
-                                alt={product.name}
-                                fill
-                                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                            <div className="absolute top-4 right-4 flex flex-col space-y-2 translate-x-12 group-hover:translate-x-0 transition-transform duration-300">
-                                <button className="p-2 bg-white rounded-full shadow-premium text-primary hover:text-accent transition-colors">
-                                    <Edit size={16} />
-                                </button>
-                                <button className="p-2 bg-white rounded-full shadow-premium text-primary hover:text-red-500 transition-colors">
-                                    <Trash2 size={16} />
-                                </button>
-                            </div>
-                            <div className="absolute bottom-4 left-4">
-                                <span className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-[10px] font-bold uppercase tracking-widest shadow-premium">
-                                    {product.category}
-                                </span>
-                            </div>
-                        </div>
-                        <div className="p-6">
-                            <h3 className="font-bold text-lg mb-1">{product.name}</h3>
-                            <div className="flex justify-between items-center text-sm font-medium">
-                                <span className="text-accent">{product.price}</span>
-                                <span className={`${product.stock < 10 ? 'text-red-500' : 'text-muted'}`}>
-                                    {product.stock} in stock
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                ))}
+            {/* Inventory Ledger View */}
+            <div className="bg-white border border-slate-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead>
+                            <tr className="text-[10px] uppercase tracking-widest font-bold text-slate-400 bg-slate-50 border-b border-slate-200">
+                                <th className="px-8 py-5">Article Identity</th>
+                                <th className="px-8 py-5">Ref Code</th>
+                                <th className="px-8 py-5">Statement Price</th>
+                                <th className="px-8 py-5">Availability</th>
+                                <th className="px-8 py-5 text-right">Action Commands</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {filteredProducts.map((product) => (
+                                <tr key={product.id} className="group hover:bg-slate-50/30 transition-colors">
+                                    <td className="px-8 py-6">
+                                        <div className="flex items-center space-x-5">
+                                            <div className="relative h-16 w-14 bg-slate-100 overflow-hidden border border-slate-200 flex-shrink-0">
+                                                <Image src={product.image} alt={product.name} fill className="object-cover" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-sm font-bold text-primary mb-1">{product.name}</h3>
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">{product.category}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div className="flex flex-col space-y-1">
+                                            <span className="text-xs font-bold text-slate-600 tracking-wider">{product.code}</span>
+                                            <span className="text-[10px] text-slate-400">/{product.slug}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <span className="text-base font-bold text-primary">{product.price}</span>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div className="flex flex-col space-y-2">
+                                            <span className={`text-[11px] font-bold ${product.stock < 10 ? 'text-red-600' : 'text-slate-600'}`}>
+                                                {product.stock} Units
+                                            </span>
+                                            <div className="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                <div className={`h-full ${product.stock < 10 ? 'bg-red-500 w-1/3' : 'bg-green-500 w-full'}`} style={{ width: `${Math.min((product.stock / 20) * 100, 100)}%` }} />
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6 text-right">
+                                        <div className="flex justify-end space-x-2">
+                                            <Link href={`/product/${product.slug}`} className="h-9 w-9 rounded bg-slate-50 text-slate-400 hover:text-primary transition-all border border-slate-200 flex items-center justify-center">
+                                                <ExternalLink size={14} />
+                                            </Link>
+                                            <button 
+                                                onClick={() => handleOpenModal(product)}
+                                                className="h-9 w-9 rounded bg-slate-50 text-slate-400 hover:text-primary transition-all border border-slate-200 flex items-center justify-center cursor-pointer"
+                                            >
+                                                <Edit size={14} />
+                                            </button>
+                                            <button 
+                                                onClick={() => deleteProduct(product.id)}
+                                                className="h-9 w-9 rounded bg-slate-50 text-slate-400 hover:text-red-600 transition-all border border-slate-200 flex items-center justify-center cursor-pointer"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
+            {/* Add/Edit Modal */}
+            {isModalOpen && (
+                <div className="fixed inset-0 bg-primary/40 backdrop-blur-sm z-[200] flex items-center justify-center p-6">
+                    <div className="bg-white w-full max-w-2xl shadow-2xl animate-fade-in overflow-hidden">
+                        <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                            <div>
+                                <h2 className="text-xl font-bold text-primary tracking-tight">{editingProduct ? "Edit Product" : "Add New Product"}</h2>
+                                <p className="text-[10px] uppercase font-bold text-slate-400 mt-1">Inventory Management Cluster</p>
+                            </div>
+                            <button onClick={handleCloseModal} className="text-slate-400 hover:text-primary transition-colors cursor-pointer">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        
+                        <form onSubmit={handleSubmit} className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Article Name</label>
+                                    <input 
+                                        type="text" 
+                                        required
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                        className="w-full p-4 bg-slate-50 border border-slate-200 focus:outline-none focus:border-primary text-sm font-bold text-primary" 
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Reference Code</label>
+                                    <input 
+                                        type="text" 
+                                        required
+                                        value={formData.code}
+                                        onChange={(e) => setFormData({...formData, code: e.target.value})}
+                                        className="w-full p-4 bg-slate-50 border border-slate-200 focus:outline-none focus:border-primary text-sm font-bold text-primary" 
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Category Context</label>
+                                    <select 
+                                        value={formData.category}
+                                        onChange={(e) => setFormData({...formData, category: e.target.value})}
+                                        className="w-full p-4 bg-slate-50 border border-slate-200 focus:outline-none focus:border-primary text-sm font-bold text-primary"
+                                    >
+                                        {categories.map(cat => (
+                                            <option key={cat.slug} value={cat.name}>{cat.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Statement Price</label>
+                                    <input 
+                                        type="text" 
+                                        required
+                                        value={formData.price}
+                                        onChange={(e) => setFormData({...formData, price: e.target.value})}
+                                        placeholder="LKR 0"
+                                        className="w-full p-4 bg-slate-50 border border-slate-200 focus:outline-none focus:border-primary text-sm font-bold text-primary" 
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Inventory Level (Stock)</label>
+                                    <input 
+                                        type="number" 
+                                        required
+                                        value={formData.stock}
+                                        onChange={(e) => setFormData({...formData, stock: parseInt(e.target.value)})}
+                                        className="w-full p-4 bg-slate-50 border border-slate-200 focus:outline-none focus:border-primary text-sm font-bold text-primary" 
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Visual Asset (URL)</label>
+                                    <input 
+                                        type="text" 
+                                        required
+                                        value={formData.image}
+                                        onChange={(e) => setFormData({...formData, image: e.target.value})}
+                                        className="w-full p-4 bg-slate-50 border border-slate-200 focus:outline-none focus:border-primary text-xs font-bold text-primary" 
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="space-y-2">
+                                <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Narrative Description</label>
+                                <textarea 
+                                    rows={4} 
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                                    className="w-full p-4 bg-slate-50 border border-slate-200 focus:outline-none focus:border-primary text-sm font-bold text-primary resize-none"
+                                />
+                            </div>
+
+                            <div className="pt-6 border-t border-slate-100 flex justify-end space-x-4">
+                                <button 
+                                    type="button"
+                                    onClick={handleCloseModal}
+                                    className="px-8 py-4 border border-slate-200 text-[11px] uppercase tracking-widest font-bold hover:bg-slate-50 transition-colors cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit"
+                                    className="px-10 py-4 bg-primary text-white text-[11px] uppercase tracking-widest font-black shadow-lg hover:bg-slate-800 transition-all cursor-pointer flex items-center space-x-2"
+                                >
+                                    <Save size={14} />
+                                    <span>{editingProduct ? "Synchronize Changes" : "Commit Product"}</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

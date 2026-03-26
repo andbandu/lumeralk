@@ -22,16 +22,16 @@ export default function Navbar() {
     }, []);
 
     const navLinks = [
-        { name: "New Arrivals", href: "/shop/new" },
-        { name: "Clothing", href: "/shop/clothing" },
-        { name: "Accessories", href: "/shop/accessories" },
+        { name: "New Arrivals", href: "/shop" },
+        { name: "Clothing", href: "/shop?category=frocks" },
+        { name: "Accessories", href: "/shop?category=accessories" },
         { name: "Collections", href: "/collections" },
     ];
 
     return (
-        <header className="fixed top-0 w-full z-50 transition-all duration-700 pointer-events-none">
+        <header className="fixed top-0 w-full z-100 transition-all duration-700 pointer-events-none">
             <nav
-                className={`container mx-auto px-6 transition-all duration-1000 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] pointer-events-auto mt-6 md:mt-10 ${isScrolled
+                className={`mx-auto px-6 lg:px-12 transition-all duration-1000 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] pointer-events-auto mt-6 md:mt-10 ${isScrolled
                     ? "max-w-5xl translate-y-[-1.5rem]"
                     : "max-w-full translate-y-0"
                     }`}
@@ -43,7 +43,7 @@ export default function Navbar() {
                         }`}
                 >
                     <div className="flex-1 flex items-center h-full">
-                        <div className="flex items-center h-full gap-6 md:gap-8">
+                        <div className="flex items-center h-full gap-6 md:gap-12">
                             {/* Scrolled Logo Text - Animated width and opacity */}
                             <div className={`transition-all duration-1000 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] flex items-center overflow-hidden border-primary/10 ${isScrolled ? "max-w-[200px] opacity-100 pr-5 border-r mr-2" : "max-w-0 opacity-0 pr-0 border-r-0 mr-0"}`}>
                                 <Link href="/" className="flex items-center hover:scale-[1.03] transition-transform whitespace-nowrap">
@@ -54,7 +54,7 @@ export default function Navbar() {
                             </div>
                             
                             {/* Desktop Nav Links */}
-                            <div className="hidden lg:flex items-center space-x-10 transition-all duration-1000 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)]">
+                            <div className="hidden lg:flex items-center space-x-8 xl:space-x-12 transition-all duration-1000 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)]">
                                 {navLinks.map((link) => (
                                     <Link
                                         key={link.name}
@@ -83,7 +83,7 @@ export default function Navbar() {
                             <img
                                 src="/lumera.png"
                                 alt="LUMERA"
-                                className="h-24 md:h-48 w-auto object-contain"
+                                className="h-16 md:h-32 w-auto object-contain"
                             />
                         </Link>
                     </div>
@@ -91,12 +91,12 @@ export default function Navbar() {
                     {/* Right: Actions */}
                     <div className="flex-none flex items-center justify-end h-full">
                         <div className={`flex items-center space-x-3 md:space-x-5 transition-colors duration-1000 ${isScrolled ? "text-primary" : "text-white"}`}>
-                            <button className="hover:text-accent transition-all duration-300 hover:scale-110 p-2">
+                            <button className="hover:text-accent transition-all duration-300 hover:scale-110 p-2 cursor-pointer">
                                 <Search size={22} strokeWidth={2} />
                             </button>
                             <button
                                 onClick={() => setIsCartOpen(true)}
-                                className="relative group p-2 transition-all duration-300 hover:scale-110"
+                                className="relative group p-2 transition-all duration-300 hover:scale-110 cursor-pointer"
                             >
                                 <ShoppingBag size={22} strokeWidth={2} className="group-hover:text-accent transition-colors" />
                                 {cartCount > 0 && (

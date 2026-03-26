@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 export type CartItem = {
   id: string; // usually a mix of productId + size
-  productId: number;
+  productId: string;
   name: string;
   price: string;
   image: string;
